@@ -168,7 +168,7 @@ export default function RegisterForm() {
                   id={field.name}
                   aria-invalid={fieldState.invalid}
                   onCheckedChange={field.onChange}
-                  checked={field.value}
+                  checked
                 />
                 <FieldLabel htmlFor={field.name}>
                   <p>
