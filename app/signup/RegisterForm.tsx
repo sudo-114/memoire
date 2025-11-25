@@ -63,7 +63,7 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="m-4">
+    <div className="m-4 max-w-md">
       <h1 className="text-3xl mb-3">Create your Memoire account</h1>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
