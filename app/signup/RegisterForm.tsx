@@ -16,15 +16,15 @@ import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import GoogleIcon from "@/components/ui/icons/google-icon";
 import AppleFilledIcon from "@/components/ui/icons/apple-icon";
+import PassController from "@/components/password-controller";
+import EmailController from "@/components/email-controller";
 
 const user = z.object({
   name: z.string("Name is required").min(1, "Name is required").trim(),
 
-  email: z.email("Please enter a valid email address"),
+  email: z.email("Enter a valid email address"),
 
   pass: z
     .string("Password should be at least 8 characters long")
@@ -43,19 +43,12 @@ const user = z.object({
 type User = z.infer<typeof user>;
 
 export default function RegisterForm() {
-  const [toggle, setToggle] = useState(<Eye />);
-  const [type, setType] = useState("password");
-  const [visible, setVisible] = useState(false);
-
-  const showPass = () => {
-    const next = !visible;
-    setVisible(next);
-    setToggle(next ? <EyeOff /> : <Eye />);
-    setType(next ? "text" : "password");
-  };
-
   const form = useForm<User>({
     resolver: zodResolver(user),
+    defaultValues: {
+      terms: true,
+    },
+    mode: "all",
   });
 
   const onSubmit = (data: User) => {
@@ -103,60 +96,12 @@ export default function RegisterForm() {
             )}
           />
 
-          <Controller
-            name="email"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                <Input
-                  {...field}
-                  id={field.name}
-                  type="email"
-                  placeholder="jdoe@example.com"
-                />
+          <EmailController name="email" control={form.control} />
 
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
+          <PassController
             name="pass"
             control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-
-                <div className="relative">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-lg"
-                    onClick={showPass}
-                    className="absolute right-0 -top-0.5"
-                  >
-                    {toggle}
-                  </Button>
-
-                  <Input
-                    {...field}
-                    id={field.name}
-                    aria-invalid={fieldState.invalid}
-                    type={type}
-                    placeholder="●●●●●●●●●●"
-                    autoComplete="new-password"
-                    className="pr-10"
-                  />
-                </div>
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
+            passComplete="new-password"
           />
 
           <Controller
@@ -168,7 +113,8 @@ export default function RegisterForm() {
                   id={field.name}
                   aria-invalid={fieldState.invalid}
                   onCheckedChange={field.onChange}
-                  checked
+                  checked={field.value}
+                  required
                 />
                 <FieldLabel htmlFor={field.name}>
                   <p>

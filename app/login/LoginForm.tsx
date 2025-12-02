@@ -4,12 +4,10 @@ import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
-  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Controller, useForm } from "react-hook-form";
@@ -18,13 +16,13 @@ import { toast } from "sonner";
 import GoogleIcon from "@/components/ui/icons/google-icon";
 import AppleFilledIcon from "@/components/ui/icons/apple-icon";
 import Link from "next/link";
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import EmailController from "@/components/email-controller";
+import PassController from "@/components/password-controller";
 
 const user = z.object({
   email: z
-    .email("Please enter a valid email address")
-    .min(1, "Please enter a valid email address"),
+    .email("Enter a valid email address")
+    .min(1, "Enter a valid email address"),
 
   pass: z
     .string("Password must be at least 8 characters long")
@@ -43,19 +41,12 @@ const user = z.object({
 type User = z.infer<typeof user>;
 
 export default function LoginForm() {
-  const [visible, setVisible] = useState(false);
-  const [type, setType] = useState("password");
-  const [toggle, setToggle] = useState(<Eye />);
-
-  const showPass = () => {
-    const next = !visible;
-    setVisible(next);
-    setType(next ? "text" : "password");
-    setToggle(next ? <EyeOff /> : <Eye />);
-  };
-
   const form = useForm<User>({
     resolver: zodResolver(user),
+    defaultValues: {
+      persist: true,
+    },
+    mode: "all",
   });
 
   const onSubmit = (data: User) => {
@@ -69,69 +60,13 @@ export default function LoginForm() {
         <FieldGroup>
           <FieldDescription>Log in to your account</FieldDescription>
 
-          <Controller
-            name="email"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                <Input
-                  {...field}
-                  type="email"
-                  id={field.name}
-                  aria-invalid={fieldState.invalid}
-                  placeholder="jdoe@example.com"
-                />
+          <EmailController name="email" control={form.control} />
 
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
+          <PassController
             name="pass"
             control={form.control}
-            render={({ field, fieldState }) => (
-              <Field>
-                <div className="relative">
-                  <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                  <Link
-                    href="reset-password"
-                    className="absolute right-0 top-0 text-sm font-semibold text-blue-500"
-                  >
-                    Forget Password?
-                  </Link>
-                </div>
-
-                <div className="relative">
-                  <Input
-                    {...field}
-                    type={type}
-                    id={field.name}
-                    aria-invalid={fieldState.invalid}
-                    placeholder="●●●●●●●●●●"
-                    autoComplete="current-password"
-                    className="pr-10"
-                  />
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-lg"
-                    onClick={showPass}
-                    className="absolute right-0 -top-0.5"
-                  >
-                    {toggle}
-                  </Button>
-                </div>
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
+            passComplete="current-password"
+            forgetPass
           />
 
           <Controller
@@ -143,7 +78,7 @@ export default function LoginForm() {
                   id={field.name}
                   aria-invalid={fieldState.invalid}
                   onCheckedChange={field.onChange}
-                  checked
+                  checked={field.value}
                 />
                 <FieldLabel htmlFor={field.name}>Remember me</FieldLabel>
               </Field>
