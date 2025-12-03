@@ -20,6 +20,8 @@ import GoogleIcon from "@/components/ui/icons/google-icon";
 import AppleFilledIcon from "@/components/ui/icons/apple-icon";
 import PassController from "@/components/password-controller";
 import EmailController from "@/components/email-controller";
+import { JSX, useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
 const user = z.object({
   name: z.string("Name is required").min(1, "Name is required").trim(),
@@ -43,6 +45,9 @@ const user = z.object({
 type User = z.infer<typeof user>;
 
 export default function RegisterForm() {
+  const [btn, setBtn] = useState<string | JSX.Element>("Create account");
+  const [disBtn, setDisBtn] = useState(false);
+
   const form = useForm<User>({
     resolver: zodResolver(user),
     defaultValues: {
@@ -51,8 +56,41 @@ export default function RegisterForm() {
     mode: "all",
   });
 
-  const onSubmit = (data: User) => {
-    toast(JSON.stringify(data, null, 2));
+  const onSubmit = async (data: User) => {
+    setDisBtn(true);
+    setBtn(<Spinner />);
+    const apiUrl = process.env.NEXT_PUBLIC_API_REGISTER;
+    try {
+      const res = await fetch(apiUrl!, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        throw new Error("Unexpected error occurred!");
+      }
+
+      const result = await res.json();
+      console.log(result);
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      if (result.success) {
+        toast.success(result.success);
+        return;
+      }
+    } catch {
+      toast("Unexpected error occurred! Try again later.");
+    } finally {
+      setDisBtn(false);
+      setBtn("Create account");
+    }
   };
 
   return (
@@ -132,7 +170,13 @@ export default function RegisterForm() {
             )}
           />
 
-          <Button type="submit">Create account</Button>
+          <Button
+            type="submit"
+            disabled={disBtn}
+            className="disabled:cursor-not-allowed"
+          >
+            {btn}
+          </Button>
         </FieldGroup>
       </form>
     </div>

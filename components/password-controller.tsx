@@ -44,10 +44,7 @@ export default function PassController<TFieldValues extends FieldValues>({
               {forgetPass && (
                 <Dialog>
                   <DialogTrigger asChild>
-                    <span
-                      variant="ghost"
-                      className="absolute right-0 top-0 text-sm font-semibold text-blue-500"
-                    >
+                    <span className="absolute right-0 top-0 text-sm font-semibold text-blue-500">
                       Forget Password?
                     </span>
                   </DialogTrigger>
