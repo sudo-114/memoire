@@ -27,7 +27,16 @@ export default function PassResetDialog() {
           link to reset your password.
         </DialogDescription>
 
-        <Input type="email" ref={emailRef} placeholder="jdoe@example.com" />
+        <Input
+          type="email"
+          ref={emailRef}
+          placeholder="jdoe@example.com"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSubmit();
+            }
+          }}
+        />
 
         <DialogFooter>
           <div className="flex justify-end gap-x-0.5">

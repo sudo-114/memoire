@@ -22,6 +22,7 @@ import PassController from "@/components/password-controller";
 import EmailController from "@/components/email-controller";
 import { JSX, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import { useRouter } from "next/navigation";
 
 const user = z.object({
   name: z.string("Name is required").min(1, "Name is required").trim(),
@@ -30,13 +31,6 @@ const user = z.object({
 
   pass: z
     .string("Password should be at least 8 characters long")
-    .regex(
-      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/,
-      "Include at least one special character",
-    )
-    .regex(/[A-Z]/, "Include at least one uppercase")
-    .regex(/[a-z]/, "Include at least one lowercase")
-    .regex(/[0-9]/, "Include at least one number")
     .min(8, "Password should be at least 8 characters long"),
 
   terms: z.boolean(),
@@ -45,6 +39,8 @@ const user = z.object({
 type User = z.infer<typeof user>;
 
 export default function RegisterForm() {
+  const router = useRouter();
+
   const [btn, setBtn] = useState<string | JSX.Element>("Create account");
   const [disBtn, setDisBtn] = useState(false);
 
@@ -59,6 +55,7 @@ export default function RegisterForm() {
   const onSubmit = async (data: User) => {
     setDisBtn(true);
     setBtn(<Spinner />);
+
     const apiUrl = process.env.NEXT_PUBLIC_API_REGISTER;
     try {
       const res = await fetch(apiUrl!, {
@@ -70,11 +67,10 @@ export default function RegisterForm() {
       });
 
       if (!res.ok) {
-        throw new Error("Unexpected error occurred!");
+        throw new Error("Something went wrong!");
       }
 
       const result = await res.json();
-      console.log(result);
 
       if (result.error) {
         toast.error(result.error);
@@ -83,10 +79,11 @@ export default function RegisterForm() {
 
       if (result.success) {
         toast.success(result.success);
-        return;
+
+        router.push("/login");
       }
     } catch {
-      toast("Unexpected error occurred! Try again later.");
+      toast("Something went wrong! Try again later.");
     } finally {
       setDisBtn(false);
       setBtn("Create account");
@@ -94,91 +91,96 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="m-4 max-w-md">
-      <h1 className="text-3xl mb-3">Create your Memoire account</h1>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FieldGroup>
-          <FieldDescription>
-            Already have an account? <Link href="/login">Log In</Link>
-          </FieldDescription>
+    <div className="flex h-screen justify-center sm:items-center">
+      <div className="w-full max-w-md m-5 mt-6">
+        <h1 className="text-3xl mb-3">Create your Memoire account</h1>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <FieldGroup>
+            <FieldDescription>
+              Already have an account? <Link href="/login">Log In</Link>
+            </FieldDescription>
 
-          <Field>
-            <Button variant="outline" type="button">
-              <GoogleIcon /> Sign up with Google
+            <Field>
+              <Button variant="outline" type="button">
+                <GoogleIcon /> Sign up with Google
+              </Button>
+              <Button variant="outline" type="button">
+                <AppleFilledIcon /> Sign up with Apple
+              </Button>
+            </Field>
+
+            <FieldSeparator>OR</FieldSeparator>
+
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Full name</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type="text"
+                    placeholder="John Doe"
+                    autoComplete="name"
+                  />
+
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <EmailController name="email" control={form.control} />
+
+            <PassController
+              name="pass"
+              control={form.control}
+              passComplete="new-password"
+            />
+
+            <Controller
+              name="terms"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  orientation="horizontal"
+                  data-invalid={fieldState.invalid}
+                >
+                  <Checkbox
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    onCheckedChange={field.onChange}
+                    checked={field.value}
+                    required
+                  />
+                  <FieldLabel htmlFor={field.name}>
+                    <p>
+                      By creating account, you agree to our{" "}
+                      <Link href="/terms" className="text-blue-500">
+                        Terms of Service
+                      </Link>{" "}
+                      and{" "}
+                      <Link href="/privacy" className="text-blue-500">
+                        Privacy Policy
+                      </Link>
+                    </p>
+                  </FieldLabel>
+                </Field>
+              )}
+            />
+
+            <Button
+              type="submit"
+              disabled={disBtn}
+              className="disabled:cursor-not-allowed"
+            >
+              {btn}
             </Button>
-            <Button variant="outline" type="button">
-              <AppleFilledIcon /> Sign up with Apple
-            </Button>
-          </Field>
-
-          <FieldSeparator>OR</FieldSeparator>
-
-          <Controller
-            name="name"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Full name</FieldLabel>
-                <Input
-                  {...field}
-                  id={field.name}
-                  type="text"
-                  placeholder="John Doe"
-                  autoComplete="name"
-                />
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <EmailController name="email" control={form.control} />
-
-          <PassController
-            name="pass"
-            control={form.control}
-            passComplete="new-password"
-          />
-
-          <Controller
-            name="terms"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                <Checkbox
-                  id={field.name}
-                  aria-invalid={fieldState.invalid}
-                  onCheckedChange={field.onChange}
-                  checked={field.value}
-                  required
-                />
-                <FieldLabel htmlFor={field.name}>
-                  <p>
-                    By creating account, you agree to our{" "}
-                    <Link href="/terms" className="text-blue-500">
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link href="/privacy" className="text-blue-500">
-                      Privacy Policy
-                    </Link>
-                  </p>
-                </FieldLabel>
-              </Field>
-            )}
-          />
-
-          <Button
-            type="submit"
-            disabled={disBtn}
-            className="disabled:cursor-not-allowed"
-          >
-            {btn}
-          </Button>
-        </FieldGroup>
-      </form>
+          </FieldGroup>
+        </form>
+      </div>
     </div>
   );
 }
