@@ -15,17 +15,20 @@ export async function POST(req: NextRequest) {
 
     const sql = neon(process.env.DATABASE_URL!);
 
-    try {
-      await sql`INSERT INTO users (name, email, pass) VALUES (${name}, ${email}, ${hashPass})`;
-    } catch {
-      return NextResponse.json({ error: "This email is already registered" });
-    }
+    await sql`INSERT INTO users (name, email, pass) VALUES (${name}, ${email}, ${hashPass})`;
 
     return NextResponse.json({ success: "Account created successfully!" });
-  } catch {
-    return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 },
-    );
+  } catch (err: any) {
+    if (err.code === "23505") {
+      return NextResponse.json(
+        { error: "This email is already registered!" },
+        { status: 409 },
+      );
+    } else {
+      return NextResponse.json(
+        { error: "Something went wrong! Try again later." },
+        { status: 500 },
+      );
+    }
   }
 }

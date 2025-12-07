@@ -1,4 +1,9 @@
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Controller, Control, Path, FieldValues } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -78,6 +83,9 @@ export default function PassController<TFieldValues extends FieldValues>({
               </Button>
             </div>
 
+            {!fieldState.invalid && (
+              <FieldDescription>Must be at least 8 characters</FieldDescription>
+            )}
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}

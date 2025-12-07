@@ -49,14 +49,13 @@ export default function RegisterForm() {
     defaultValues: {
       terms: true,
     },
-    mode: "all",
   });
 
   const onSubmit = async (data: User) => {
     setDisBtn(true);
     setBtn(<Spinner />);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_REGISTER;
+    const apiUrl = process.env.NEXT_PUBLIC_API_SIGNUP;
     try {
       const res = await fetch(apiUrl!, {
         method: "POST",
@@ -65,10 +64,6 @@ export default function RegisterForm() {
         },
         body: JSON.stringify(data),
       });
-
-      if (!res.ok) {
-        throw new Error("Something went wrong!");
-      }
 
       const result = await res.json();
 

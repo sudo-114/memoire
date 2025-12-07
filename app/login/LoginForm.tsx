@@ -47,7 +47,6 @@ export default function LoginForm() {
     defaultValues: {
       persist: true,
     },
-    mode: "all",
   });
 
   const onSubmit = async (data: User) => {
@@ -62,10 +61,6 @@ export default function LoginForm() {
         },
         body: JSON.stringify(data),
       });
-
-      if (!res.ok) {
-        toast.error("Something went wrong!");
-      }
 
       const result = await res.json();
 
